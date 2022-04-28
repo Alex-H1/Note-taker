@@ -14,5 +14,10 @@ app.listen(PORT,()=>
 );
 
 app.get('/notes', (req, res) =>
-  res.sendFile(path.join(__dirname, 'public/notes.html'))
+  res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
+
+app.get('/api/notes',(req,res)=>{
+  res.json(`${req.method}requested recieved to notes`);
+  console.info(`${req.method} request recieved to notes`)
+})
