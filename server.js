@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const uuid = require('./helper/uuid');
 const notes = require('./db/db.json');
+const { json } = require('express/lib/response');
 
 
 // const { text } = require('express');
@@ -18,9 +19,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
-app.get("/",function(req, res){
-    res.sendFile(path.join(__dirname,"public/index.html"))
-})
 
 app.listen(PORT,()=>
     console.log(`Example app listening at http://localhost:${PORT}`)
@@ -32,13 +30,13 @@ app.get('/notes', (req, res) =>
 
 // get request for notes
 app.get('/api/notes',(req,res)=>{
-  console.log(notes);
-  res.json(notes);
-  console.info(`${req.method} request recieved to get notes`)
+  fs.readFile('./db/db.json','utf-8',(error,data)=>{
+    error ? console.log(err) : res.json(JSON.parse(data))
+  })
 });
 
 app.post('/api/notes',(req,res)=>{
-  console.info(`${req.method} request recieved to add a note`);
+  // console.info(`${req.method} request recieved to add a note`);
   
   const { title , text } = req.body;
   if(title && text){
@@ -47,11 +45,25 @@ app.post('/api/notes',(req,res)=>{
       text,
       note_id: uuid(),
     };
-    const reviewNote = JSON.stringify(newNote);
+    // const reviewNote = JSON.stringify(newNote);
   
-  fs.appendFile(`./db/db.json`,reviewNote, (err)=>
-    err ? console.error(err) : console.log `Review for ${newNote} has been written to JSON file`  
-  );
+  // fs.appendFile(`./db/db.json`,reviewNote, (err)=>
+  //   err ? console.error(err) : console.log `Review for ${newNote} has been written to JSON file`  
+  // );
+
+  fs.readFile('./db/db.json','utf-8',(error,data)=>{
+    if(error){
+      console.log(error);
+    }else{
+      const reviewNotes = JSON.parse(data);
+      reviewNotes.push(newNote);
+      reviews = reviewNotes
+
+      fs.writeFile('./db/db.json',JSON.stringify(reviewNotes,null,4),
+      (writeErr)=> writeErr ? console.error(writeErr) : console.info('wrote note')
+      )
+    }
+  })
 
   const response ={
     status: 'success',
@@ -64,46 +76,10 @@ app.post('/api/notes',(req,res)=>{
   }
 })
 
-// app.post('/api/notes', function(req, res){
-//   console.info(`${req.method} request recieved to add a note`);
 
-//   const { title , text} = req.body;
-//   if(title && text){
-//     const newNote ={
-//       title,
-//       text,
-//       note_id: uuid(),
-//     };
-//     const parsedNotes = JSON.parse(data);
+app.get("*",function(req, res){
+    res.sendFile(path.join(__dirname,"public/index.html"))
+})
 
-//     parsedNotes.push(newNote);
-//     notes = newNote;
 
-//     // fs.writeFile('./db/db.json','utf-8',JSON.stringify(parsedNotes),
-//     // (writeErr)=>writeErr? console.error(writeErr) : console.info('succesfullt updated notes')
-//     // );
-//     fs.readFile('./db/db.json', 'utf-8',(err,data)=>{
-//       if(err){
-//         console.error(err);
-//       }else{
-//         const parsedNotes = JSON.parse(data);
 
-//         parsedNotes.push(newNote);
-//         notes = newNote;
-
-//         fs.writeFile('./db/db.json',JSON.stringify(parsedNotes),
-//         (writeErr)=>writeErr? console.error(writeErr) : console.info('succesfully updated ntoes!')
-//         );
-//       };
-//     });
-//     const response ={
-//       status: 'success',
-//       body: newNote
-//     };
-//     console.log(response);
-//     res.json(response)  
-//   }else{
-//     res.json('Error in posting note')
-//   }
- 
-// });
