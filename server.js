@@ -3,13 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const uuid = require('./helper/uuid');
 const notes = require('./db/db.json');
-const { json } = require('express/lib/response');
-
-
-// const { text } = require('express');
-// const { title } = require('process');
-// const { randomUUID } = require('crypto');
-// const { json } = require('express/lib/response');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -36,7 +29,6 @@ app.get('/api/notes',(req,res)=>{
 });
 
 app.post('/api/notes',(req,res)=>{
-  // console.info(`${req.method} request recieved to add a note`);
   
   const { title , text } = req.body;
   if(title && text){
@@ -45,20 +37,16 @@ app.post('/api/notes',(req,res)=>{
       text,
       note_id: uuid(),
     };
-    // const reviewNote = JSON.stringify(newNote);
-  
-  // fs.appendFile(`./db/db.json`,reviewNote, (err)=>
-  //   err ? console.error(err) : console.log `Review for ${newNote} has been written to JSON file`  
-  // );
+
+    const reviewNotes = JSON.parse(data);
+    reviewNotes.push(newNote);
+    reviews = reviewNotes
+
 
   fs.readFile('./db/db.json','utf-8',(error,data)=>{
     if(error){
       console.log(error);
     }else{
-      const reviewNotes = JSON.parse(data);
-      reviewNotes.push(newNote);
-      reviews = reviewNotes
-
       fs.writeFile('./db/db.json',JSON.stringify(reviewNotes,null,4),
       (writeErr)=> writeErr ? console.error(writeErr) : console.info('wrote note')
       )
